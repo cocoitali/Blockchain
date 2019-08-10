@@ -196,6 +196,13 @@ def full_chain():
     }
     return jsonify(response), 200
 
+@app.route('/last_proof', methods=['GET'])
+def last_proof():
+    last_proof_value = blockchain.last_block.get('proof')
+    response = {
+        'proof': last_proof_value
+    }
+    return jsonify(response), 200
 
 # Note, when demoing, start with this, then change to the below
 # if __name__ == '__main__':

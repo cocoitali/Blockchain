@@ -12,7 +12,7 @@ class Blockchain(object):
         self.current_transactions = [] # transactions cuing up to be part of the next block that gets added to end of chain
         self.nodes = set() # actors
 
-        self.new_block(previous_hash=1, proof=99)
+        self.new_block(previous_hash=1, proof=100)
 
     def new_block(self, proof, previous_hash=None):
         """
@@ -64,10 +64,19 @@ class Blockchain(object):
         "return": <str>
         """
 
+         # json.dumps converts json into a string
+        # hashlib.sha246 is used to createa hash
+        # It requires a `bytes-like` object, which is what
+        # .encode() does.  It convertes the string to bytes.
         # We must make sure that the Dictionary is Ordered,
         # or we'll have inconsistent hashes
 
         block_string = json.dumps(block, sort_keys=True).encode()
+        # By itself, this function returns the hash in a raw string
+        # that will likely include escaped characters.
+        # This can be hard to read, but .hexdigest() converts the
+        # hash to a string using hexadecimal characters, which is
+        # easer to work with and understand.
         return hashlib.sha256(block_string).hexdigest()
 
     @property
@@ -94,15 +103,12 @@ class Blockchain(object):
         Validates the Proof:  Does hash(block_string, proof) contain 6
         leading zeroes? """
 
-        # build string to hash
+        # hash the block string and proof together
         guess = f'{last_proof}{proof}'.encode()
         guess_hash = hashlib.sha256(guess).hexdigest()
-        # check if 6 leading 0's of hash result
-        beg = guess_hash[0:6] # [:6] this is another way to do it
-        if beg == "000000":
-            return True
-        else:
-            return False
+        # return True if that hash starts with 6 zeros, Flase otherwise
+        guess_hash[:6] == '000000'
+
 
     def valid_chain(self, chain): #find the longest chain w/ correct hashes
        
@@ -122,9 +128,12 @@ class Blockchain(object):
             print("\n-------------------\n")
             # Check that the hash of the block is correct
             # TODO: Return false if hash isn't correct
+            block_string = json.dumps(last_block, sort_keys=True)
 
             # Check that the Proof of Work is correct
             # TODO: Return false if proof isn't correct
+            if not self.valid_proof(block_string, block['proof']):
+                return False
 
             last_block = block
             current_index += 1
@@ -145,10 +154,10 @@ blockchain = Blockchain()
 @app.route('/mine', methods=['GET'])
 def mine():
     # We run the proof of work algorithm to get the next proof...
-    proof = blockchain.proof_of_work(blockchain.last_block)
+    proof = blockchain.proof_of_work()
 
     # We must receive a reward for finding the proof.
-    # TODO:
+   
     # The sender is "0" to signify that this node has mine a new coin
     # The recipient is the current node, it did the mining!
     # The amount is 1 coin as a reward for mining the next block

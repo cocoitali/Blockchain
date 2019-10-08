@@ -99,13 +99,13 @@ class Blockchain(object):
         return proof
 
     @staticmethod
-    def valid_proof(last_proof, proof):
+    def valid_proof(block_string, proof):
         """
         Validates the Proof:  Does hash(block_string, proof) contain 6
         leading zeroes? """
 
         # hash the block string and proof together
-        guess = f'{last_proof}{proof}'.encode()
+        guess = f'{block_string}{proof}'.encode()
         guess_hash = hashlib.sha256(guess).hexdigest()
         # return True if that hash starts with 6 zeros, Flase otherwise
         guess_hash[:6] == '000000'
@@ -129,10 +129,13 @@ class Blockchain(object):
             print("\n-------------------\n")
             # Check that the hash of the block is correct
             # TODO: Return false if hash isn't correct
+            if self.hash(last_block) !=block['previous_hash']:
+                return False
+
             block_string = json.dumps(last_block, sort_keys=True)
 
             # Check that the Proof of Work is correct
-            # TODO: Return false if proof isn't correct
+           
             if not self.valid_proof(block_string, block['proof']):
                 return False
 
